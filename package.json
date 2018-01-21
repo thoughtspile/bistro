@@ -1,0 +1,24 @@
+{
+  "name": "bistro-access",
+  "version": "0.0.1",
+  "description": "Lightning-fast replacement for lodash.get",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "lodash",
+    "utility",
+    "util",
+    "access",
+    "get"
+  ],
+  "author": "v.klepov",
+  "license": "MIT",
+  "devDependencies": {
+    "benchmark": "^2.1.4",
+    "fast-get": "^1.0.2",
+    "lodash.get": "^4.4.2",
+    "randomstring": "^1.1.5"
+  }
+}
