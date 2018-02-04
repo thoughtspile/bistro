@@ -1,12 +1,9 @@
-const getterCache = {};
-
-function compile(path) {
-  const pathArray = path.split('.');
-  const pathTail = pathArray.pop();
+module.exports = function compileGetter(pathArray) {
+  const pathTail = pathArray[pathArray.length - 1];
 
   let truthyCheckItem = 'obj';
   let truthyCheckExpr = truthyCheckItem;
-  for (var i = 0; i < pathArray.length; i++) {
+  for (var i = 0; i < pathArray.length - 1; i++) {
     truthyCheckItem += '["' + pathArray[i] + '"]';
     truthyCheckExpr += ' && ' + truthyCheckItem;
   }
@@ -17,21 +14,4 @@ function compile(path) {
       return ${itemGetExpr};
     }
     return defaultValue;`);
-}
-
-function once(obj, path, defaultValue) {
-  return (getterCache[path] || compile(path))(obj, defaultValue);
-}
-
-function get(obj, path, defaultValue, useCache) {
-  if (!getterCache[path]) {
-    const getter = compile(path);
-    getterCache[path] = getter;
-  }
-  return getterCache[path](obj, defaultValue);
-}
-
-
-get.once = once;
-get.compile = compile;
-module.exports = get;
+};
