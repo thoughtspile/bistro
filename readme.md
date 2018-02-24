@@ -42,5 +42,7 @@ The chart summarizes the performance of successful property access by array path
 * The other `bistro-*` lines are alternative implementations not included in the bundle, for me to watch out for changes.
 * `fast-get` and `object-path` are there in the bottom.
 <div style="width: 50%; float: right">
-  <img src="web-asset/chart.png" ></img>
+  <img src="https://github.com/thoughtspile/bistro/raw/master/web-asset/chart.png"></img>
 </div>
+
+Made by [Vladimir Klepov](https://github.com/thoughtspile).
