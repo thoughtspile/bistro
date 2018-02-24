@@ -2,11 +2,11 @@
   "name": "bistro",
   "version": "0.0.1",
   "description": "Lightning-fast replacement for lodash.get",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "test": "node test/unit",
     "test:perf": "mkdir -p .tmp && node --expose-gc test/perf > .tmp/perf.json",
-    "build": "babel src --out-dir lib --presets=env"
+    "build": "babel src --out-dir lib --presets=env && webpack"
   },
   "keywords": [
     "lodash",
@@ -25,6 +25,7 @@
     "lodash.get": "^4.4.2",
     "lodash.set": "^4.3.2",
     "object-path": "^0.11.4",
-    "randomstring": "^1.1.5"
+    "randomstring": "^1.1.5",
+    "webpack": "^3.11.0"
   }
 }
