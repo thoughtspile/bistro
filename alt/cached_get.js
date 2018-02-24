@@ -7,11 +7,9 @@ module.exports = function compileGetter(pathArray) {
   }
   const itemGetExpr = `obj["${pathTail}"]`;
 
-  const body = `
+  return new Function('obj', 'defaultValue', `
     if (${truthyCheckExpr} && ${itemGetExpr} !== undefined) {
       return ${itemGetExpr};
     }
-    return defaultValue;`;
-  console.log(body);
-  return new Function('obj', 'defaultValue', body);
+    return defaultValue;`);
 };

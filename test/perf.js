@@ -8,63 +8,62 @@ const bistroCachedGet = require('../alt/cached_get');
 const bistroLoopGet = require('../alt/loop_get');
 const objectPath = require('object-path');
 
-const PATH_LEN = 5;
+function runBench(PATH_LEN) {
+  const pathArray = [];
+  for (var i = 0; i < PATH_LEN; i++) {
+    pathArray.push(randomstring.generate({ length: 12, charset: 'alphabetic' }));
+  }
+  const pathStr = pathArray.join('.');
+  const populate = (obj, path, val) => {
+    if (path.length === 0) return val;
+    const head = path.shift();
+    obj[head] = populate({}, path, val);
+    return obj;
+  };
+  const yes = populate({}, pathArray.slice(), 234);
+  const no = populate({}, pathArray.slice(0, -1), 234);
 
-const pathArray = [];
-for (var i = 0; i < PATH_LEN; i++) {
-  pathArray.push(randomstring.generate({ length: 12, charset: 'alphabetic' }));
+  const bistroGetter = bistroGet(pathArray);
+  const bistroCachedGetter = bistroCachedGet(pathArray);
+  const bistroLoopGetter = bistroLoopGet(pathArray);
+
+  const getters = {
+    'lodash.get': (o, p) => () => _get(o, p),
+    'fast-get': (o, p) => () => fastGet(o, p),
+    'object-path': (o, p) => () => objectPath.get(o, p),
+    'bistro.get': (o, p) => () => bistroGetter(o),
+    'bistro.cached_get': (o, p) => () => bistroCachedGetter(o),
+    'bistro.loop_get': (o, p) => () => bistroLoopGetter(o),
+  };
+
+  return new Promise((ok) => {
+    const stats = [];
+    const bench = new Benchmark.Suite();
+    Object.keys(getters).forEach(getName => {
+      bench.add(`${getName}, ok, ${PATH_LEN}`, getters[getName](yes, pathArray));
+      bench.add(`${getName}, miss, ${PATH_LEN}`, getters[getName](no, pathArray));
+    });
+    bench.on('cycle', function(event) {
+        console.log(String(event.target));
+        const [name, status, depth] = event.target.name.split(',').map(s => s.trim());
+        stats.push({
+          name,
+          status,
+          depth: Number(depth),
+          opsPerSec: event.target.hz,
+          rme: event.target.stats.rme
+        });
+      })
+      .on('complete', function() {
+        console.log('Fastest is ' + this.filter('fastest').map('name'));
+        ok(stats);
+      })
+      .run({ 'async': false });
+    });
 }
-const pathStr = pathArray.join('.');
-const populate = (obj, path, val) => {
-  if (path.length === 0) return val;
-  const head = path.shift();
-  obj[head] = populate({}, path, val);
-  return obj;
-};
-const yes = populate({}, pathArray.slice(), 234);
-const no = populate({}, pathArray.slice(0, -1), 234);
 
-const bistroGetter = bistroGet(pathArray);
-const bistroCachedGetter = bistroCachedGet(pathArray);
-const bistroLoopGetter = bistroLoopGet(pathArray);
-var suite = new Benchmark.Suite();
-var memUsage = 0;
-suite
-  .add('lodash.get, ok,   array path', () => _get(yes, pathArray))
-  .add('lodash.get, miss, array path', () => _get(no, pathArray))
-  .add('lodash.get, ok,   string path', () => _get(yes, pathStr))
-  .add('lodash.get, miss, string path', () => _get(no, pathStr))
-
-  .add('fast-get, ok,   array path', () => fastGet(yes, pathArray))
-  .add('fast-get, miss, array path', () => fastGet(no, pathArray))
-  .add('fast-get, ok,   string path', () => fastGet(yes, pathStr))
-  .add('fast-get, miss, string path', () => fastGet(no, pathStr))
-
-  .add('object-path, ok,   array path', () => objectPath.get(yes, pathArray))
-  .add('object-path, miss, array path', () => objectPath.get(no, pathArray))
-  .add('object-path, ok,   string path', () => objectPath.get(yes, pathStr))
-  .add('object-path, miss, string path', () => objectPath.get(no, pathStr))
-
-  .add('bistro.get, ok,   string path', () => bistroGetter(yes))
-  .add('bistro.get, miss, string path', () => bistroGetter(no))
-  .add('bistro.cached_get, ok,   string path', () => bistroCachedGetter(yes))
-  .add('bistro.cached_get, miss,   string path', () => bistroCachedGetter(no))
-  .add('bistro.loop_get, ok,   string path', () => bistroLoopGetter(yes))
-  .add('bistro.loop_get, miss,   string path', () => bistroLoopGetter(no))
-  // add listeners
-  .on('start', function(event) {
-    global.gc(true);
-    memUsage = process.memoryUsage().heapUsed;
-  })
-  .on('cycle', function(event) {
-    console.log(String(event.target));
-
-    console.log(process.memoryUsage().heapUsed - memUsage, 'bytes used');
-    global.gc(true);
-    memUsage = process.memoryUsage().heapUsed;
-  })
-  .on('complete', function() {
-    console.log('Fastest is ' + this.filter('fastest').map('name'));
-  })
-  // run async
-  .run({ 'async': false });
+Promise.all([1,2,3,4,5,6,7,8,9,10].map(c => runBench(c))).then(stats => {
+  console.log('---START---');
+  console.log(JSON.stringify(stats.reduce((acc, stats) => acc.concat(stats), [])));
+  console.log('---END---');
+});

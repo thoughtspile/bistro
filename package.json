@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "node test/unit",
+    "test:perf": "mkdir -p .tmp && node --expose-gc test/perf > .tmp/perf.json",
     "build": "babel src --out-dir lib --presets=env"
   },
   "keywords": [
