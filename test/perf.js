@@ -6,6 +6,7 @@ const fastGet = require('fast-get').default;
 const bistroGet = require('../src/get');
 const bistroCachedGet = require('../alt/cached_get');
 const bistroLoopGet = require('../alt/loop_get');
+const objectPath = require('object-path');
 
 const PATH_LEN = 5;
 
@@ -27,6 +28,7 @@ const bistroGetter = bistroGet(pathArray);
 const bistroCachedGetter = bistroCachedGet(pathArray);
 const bistroLoopGetter = bistroLoopGet(pathArray);
 var suite = new Benchmark.Suite();
+var memUsage = 0;
 suite
   .add('lodash.get, ok,   array path', () => _get(yes, pathArray))
   .add('lodash.get, miss, array path', () => _get(no, pathArray))
@@ -38,6 +40,11 @@ suite
   .add('fast-get, ok,   string path', () => fastGet(yes, pathStr))
   .add('fast-get, miss, string path', () => fastGet(no, pathStr))
 
+  .add('object-path, ok,   array path', () => objectPath.get(yes, pathArray))
+  .add('object-path, miss, array path', () => objectPath.get(no, pathArray))
+  .add('object-path, ok,   string path', () => objectPath.get(yes, pathStr))
+  .add('object-path, miss, string path', () => objectPath.get(no, pathStr))
+
   .add('bistro.get, ok,   string path', () => bistroGetter(yes))
   .add('bistro.get, miss, string path', () => bistroGetter(no))
   .add('bistro.cached_get, ok,   string path', () => bistroCachedGetter(yes))
@@ -45,8 +52,16 @@ suite
   .add('bistro.loop_get, ok,   string path', () => bistroLoopGetter(yes))
   .add('bistro.loop_get, miss,   string path', () => bistroLoopGetter(no))
   // add listeners
+  .on('start', function(event) {
+    global.gc(true);
+    memUsage = process.memoryUsage().heapUsed;
+  })
   .on('cycle', function(event) {
     console.log(String(event.target));
+
+    console.log(process.memoryUsage().heapUsed - memUsage, 'bytes used');
+    global.gc(true);
+    memUsage = process.memoryUsage().heapUsed;
   })
   .on('complete', function() {
     console.log('Fastest is ' + this.filter('fastest').map('name'));
