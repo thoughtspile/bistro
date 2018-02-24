@@ -41,5 +41,6 @@ The chart summarizes the performance of successful property access by array path
 * `lodash.get` is red.
 * The other `bistro-*` lines are alternative implementations not included in the bundle, for me to watch out for changes.
 * `fast-get` and `object-path` are there in the bottom.
-
-<img src="web-asset/chart.png" style="width: 50%; float: right"></img>
+<div style="width: 50%; float: right">
+  <img src="web-asset/chart.png" ></img>
+</div>

@@ -33,7 +33,7 @@ function runBench(PATH_LEN) {
     'object-path': (o, p) => () => objectPath.get(o, p),
     'bistro.get': (o, p) => () => bistroGetter(o),
     'bistro.cached_get': (o, p) => () => bistroCachedGetter(o),
-    'bistro.loop_get': (o, p) => () => bistroLoopGetter(o),
+    'bistro.loop_get': (o, p) => () => bistroLoopGetter(o)
   };
 
   return new Promise((ok) => {
@@ -63,7 +63,5 @@ function runBench(PATH_LEN) {
 }
 
 Promise.all([1,2,3,4,5,6,7,8,9,10].map(c => runBench(c))).then(stats => {
-  console.log('---START---');
   console.log(JSON.stringify(stats.reduce((acc, stats) => acc.concat(stats), [])));
-  console.log('---END---');
 });
